@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <title>NutriControl</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 & Font Awesome 4.7 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Chart.js para gráfica simulada -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-body-secondary">
+
+<!-- Login (se oculta tras autenticación) -->
+<section id="loginView" class="d-flex vh-100 justify-content-center align-items-center">
+  <div class="card p-4 shadow" style="max-width:22rem">
+    <h1 class="h4 text-center mb-3"><i class="fa fa-leaf"></i> NutriControl</h1>
+    <form id="loginForm">
+      <div class="form-floating mb-2">
+        <input type="email" class="form-control" id="email" value="user@demo.com" required>
+        <label for="email">Correo</label>
+      </div>
+      <div class="form-floating mb-3">
+        <input type="password" class="form-control" id="pwd" value="12345" required>
+        <label for="pwd">Contraseña</label>
+      </div>
+      <button class="btn btn-success w-100" type="submit">Entrar</button>
+    </form>
+  </div>
+</section>
+
+<!-- Barra nav + contenedor SPA (ocultos hasta login correcto) -->
+<nav id="mainNav" class="navbar navbar-expand-lg bg-success navbar-dark px-3 d-none">
+  <a class="navbar-brand fw-semibold" href="#"><i class="fa fa-leaf"></i> NutriControl</a>
+  <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navLinks"><span class="navbar-toggler-icon"></span></button>
+  <div id="navLinks" class="collapse navbar-collapse">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item"><a data-target="dashboard" class="nav-link active" href="#"><i class="fa fa-home"></i> Inicio</a></li>
+      <li class="nav-item"><a data-target="mealLog"  class="nav-link" href="#"><i class="fa fa-cutlery"></i> Registro</a></li>
+      <li class="nav-item"><a data-target="analytics" class="nav-link" href="#"><i class="fa fa-line-chart"></i> Gráficas</a></li>
+      <li class="nav-item"><a data-target="settings" class="nav-link" href="#"><i class="fa fa-cog"></i> Ajustes</a></li>
+    </ul>
+    <button id="btnLogout" class="btn btn-outline-light btn-sm"><i class="fa fa-sign-out"></i> Salir</button>
+  </div>
+</nav>
+
+<main id="appContainer" class="container py-4 d-none">
+
+  <!-- Interface 1 Dashboard -->
+  <section id="dashboard" class="view">
+    <h2 class="h4 mb-3"><i class="fa fa-bar-chart"></i> Resumen diario</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card text-center p-3 bg-light">
+          <h5><i class="fa fa-fire text-danger"></i> Calorías consumidas</h5>
+          <span id="calsToday" class="display-6 fw-bold text-success">1450</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3 bg-light">
+          <h5><i class="fa fa-bullseye text-primary"></i> Meta diaria</h5>
+          <span class="display-6 fw-bold">2000</span>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3 bg-light">
+          <h5><i class="fa fa-check text-success"></i> Restantes</h5>
+          <span id="calsLeft" class="display-6 fw-bold text-primary">550</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interface 2 Meal Log -->
+  <section id="mealLog" class="view d-none">
+    <h2 class="h4 mb-3"><i class="fa fa-cutlery"></i> Registro de comidas</h2>
+    <form id="formMeal" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Alimento</label>
+        <input id="foodName" class="form-control" list="foods" placeholder="Ej. Pollo a la plancha">
+        <datalist id="foods">
+          <option value="Pollo a la plancha">
+          <option value="Arroz integral">
+          <option value="Manzana">
+        </datalist>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cantidad (g)</label>
+        <input id="foodGrams" type="number" class="form-control" value="100">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-success w-100"><i class="fa fa-plus"></i> Añadir</button>
+      </div>
+    </form>
+    <table class="table table-sm mt-4">
+      <thead><tr><th>Alimento</th><th>Cant. (g)</th><th>Calorías</th></tr></thead>
+      <tbody id="mealTable"></tbody>
+    </table>
+  </section>
+
+  <!-- Interface 3 Analytics -->
+  <section id="analytics" class="view d-none">
+    <h2 class="h4 mb-3"><i class="fa fa-line-chart"></i> Progreso semanal</h2>
+    <canvas id="chartCals" height="120"></canvas>
+  </section>
+
+  <!-- Interface 4 Settings -->
+  <section id="settings" class="view d-none">
+    <h2 class="h4 mb-3"><i class="fa fa-cog"></i> Ajustes</h2>
+    <form id="formSettings" class="col-md-6">
+      <label class="form-label">Meta calórica diaria</label>
+      <input id="dailyGoal" type="number" class="form-control" value="2000">
+      <div class="form-check form-switch mt-3">
+        <input class="form-check-input" type="checkbox" id="darkMode">
+        <label class="form-check-label" for="darkMode">Modo oscuro</label>
+      </div>
+      <button class="btn btn-primary mt-3">Guardar</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- JS de la SPA -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+<!-- Gráfica simulada para que la sección no esté vacía -->
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var ctx = document.getElementById('chartCals').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        datasets: [{
+          label: 'Calorías',
+          backgroundColor: '#5cb85c',
+          data: [1800, 1950, 2000, 1750, 2100, 1900, 1850]
+        }]
+      },
+      options: {
+        legend: { display: false },
+        scales: {
+          yAxes: [{ ticks: { beginAtZero: true } }]
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>
