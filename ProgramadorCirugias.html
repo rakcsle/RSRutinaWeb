@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Programador de Cirugías – Prototipo</title>
+  <!-- Font Awesome 4.7 -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    body{font-family:Arial, Helvetica, sans-serif;background:#f7f7f7;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+    .container{background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,.1);width:400px;}
+    h1{font-size:1.3rem;margin-bottom:1rem;text-align:center;}
+    .form-group{margin-bottom:1rem;}
+    label{display:block;margin-bottom:.3rem;font-weight:600;}
+    select,input,textarea{width:100%;padding:.5rem;border:1px solid #ccc;border-radius:6px;font-size:.9rem;}
+    textarea{resize:vertical;min-height:70px;}
+    button{display:block;width:100%;padding:.7rem;border:none;border-radius:6px;background:#28a745;color:#fff;font-size:1rem;cursor:pointer;transition:background .3s;}
+    button:hover{background:#218838;}
+    .icon{margin-right:.4rem;color:#28a745;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fa fa-calendar-check-o icon"></i>Programar Cirugía</h1>
+
+    <form id="surgeryForm">
+      <div class="form-group">
+        <label for="patient"><i class="fa fa-user-o icon"></i>Paciente</label>
+        <select id="patient" required>
+          <option value="">Seleccione paciente</option>
+          <option>Juan Pérez</option>
+          <option>María Gómez</option>
+          <option>Pedro López</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="surgery"><i class="fa fa-heartbeat icon"></i>Tipo de cirugía</label>
+        <select id="surgery" required>
+          <option value="">Seleccione cirugía</option>
+          <option>Bypass gástrico</option>
+          <option>Artroscopía de rodilla</option>
+          <option>Cesárea</option>
+          <option>Extracción de vesícula</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="date"><i class="fa fa-calendar icon"></i>Fecha</label>
+        <input type="date" id="date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="time"><i class="fa fa-clock-o icon"></i>Hora</label>
+        <input type="time" id="time" required>
+      </div>
+
+      <div class="form-group">
+        <label for="doctor"><i class="fa fa-user-md icon"></i>Médico responsable</label>
+        <select id="doctor" required>
+          <option value="">Seleccione médico</option>
+          <option>Dr. Sánchez</option>
+          <option>Dra. Herrera</option>
+          <option>Dr. Morales</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="obs"><i class="fa fa-sticky-note-o icon"></i>Observaciones</label>
+        <textarea id="obs" placeholder="Comentarios adicionales..."></textarea>
+      </div>
+
+      <button type="submit"><i class="fa fa-save icon"></i>Guardar programación</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('surgeryForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      alert('¡Programación guardada exitosamente!');
+      this.reset();
+    });
+  </script>
+</body>
+</html>
