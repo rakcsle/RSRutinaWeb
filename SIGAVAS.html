@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SIGAVAS · Prototipo académico</title>
+  <style>
+*{
+box-sizing:border-box}
+body{
+margin:0;
+font:16px Arial,sans-serif;
+background:#f3f6f3;
+color:#183c32}
+button,input,select{
+font:inherit}
+button{
+cursor:pointer;
+border:0;
+border-radius:7px;
+padding:12px 18px;
+background:#226649;
+color:white}
+button:hover{
+background:#174b36}
+button.secondary{
+background:#e5eee8;
+color:#183c32}
+button:disabled{
+opacity:.45;
+cursor:default}
+aside{
+width:235px;
+background:#163f33;
+color:white;
+position:fixed;
+inset:0 auto 0 0;
+padding:32px 20px;
+display:flex;
+flex-direction:column;
+gap:8px}
+aside h1{
+margin:0;
+font-size:27px}
+aside p{
+color:#b9d1c3;
+font-size:13px;
+margin-bottom:32px}
+aside button{
+text-align:left;
+background:transparent}
+aside button.active{
+background:#35634f}
+aside small{
+margin-top:auto;
+color:#c2d7ca;
+line-height:1.6}
+main{
+margin-left:235px;
+padding:28px 40px;
+max-width:1600px}
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+border-bottom:1px solid #d6e0d8;
+padding-bottom:18px;
+margin-bottom:30px}
+header small{
+display:block;
+margin-bottom:7px;
+color:#607a6c}
+h2{
+font-size:30px;
+margin:0 0 10px}
+h3{
+margin-top:0}
+p{
+line-height:1.55}
+.muted{
+color:#637b6c}
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:18px}
+.card{
+background:white;
+border:1px solid #dce5dd;
+border-radius:12px;
+padding:24px;
+margin-bottom:20px}
+.stat{
+font-size:32px;
+font-weight:bold;
+margin:12px 0}
+.tag{
+display:inline-block;
+padding:5px 10px;
+border-radius:14px;
+background:#e7f1e9;
+color:#28613c;
+font-size:13px}
+.warn{
+background:#fff3d9;
+color:#775116}
+.info{
+padding:15px 18px;
+border-left:4px solid #c99f4b;
+background:#fffbef;
+line-height:1.5;
+margin:20px 0}
+table{
+border-collapse:collapse;
+width:100%;
+font-size:15px}
+th{
+text-align:left;
+background:#edf3ee;
+padding:14px 12px}
+td{
+border-bottom:1px solid #e3e9e4;
+padding:16px 12px}
+label{
+display:block;
+margin-bottom:16px;
+font-weight:bold;
+font-size:14px}
+input,select{
+display:block;
+width:100%;
+padding:12px;
+margin-top:7px;
+border:1px solid #b7c9bc;
+border-radius:6px;
+background:white;
+color:#163f33}
+.row{
+display:flex;
+gap:12px;
+align-items:center;
+flex-wrap:wrap}
+.row label{
+flex:1}
+.steps li{
+line-height:1.7;
+margin-bottom:10px}
+#notice{
+position:fixed;
+bottom:20px;
+right:24px;
+max-width:550px;
+background:#143d30;
+color:white;
+padding:17px 24px;
+border-radius:8px;
+box-shadow:0 3px 15px #0002;
+z-index:5}
+#notice:empty{
+display:none}
+.login{
+max-width:560px;
+margin:70px auto}
+.login h1{
+font-size:38px}
+.login small{
+line-height:1.6;
+display:block}
+.right{
+text-align:right}
+footer{
+font-size:12px;
+color:#6d8074;
+margin-top:28px}
+.tablewrap{
+overflow:auto}
+@media(max-width:800px){
+aside{
+position:relative;
+width:auto;
+padding:20px;
+display:block}
+aside h1,aside p{
+display:inline;
+margin-right:15px}
+aside button{
+padding:10px}
+aside small{
+display:none}
+main{
+margin:0;
+padding:20px}
+.grid{
+grid-template-columns:1fr}
+header{
+align-items:flex-start}
+h2{
+font-size:26px}
+}
+@media print{
+aside,header button,button,#notice{
+display:none}
+main{
+margin:0;
+padding:0}
+.card{
+break-inside:avoid}
+body{
+background:white}
+}
+
+
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <script>
+const key='sigavas-act16-v1';
+const base=()=>( {
+  stock:20,cost:10000,activities:[],logs:[],harvest:0,packed:0,sent:0
+}
+);
+let state=base(),role='',view='Inicio';
+try {
+  state=JSON.parse(localStorage.getItem(key))||base()
+}
+catch(e) {
+}
+const money=n=>new Intl.NumberFormat('es-MX', {
+  style:'currency',currency:'MXN'
+}
+).format(n);
+const safe=s=>String(s).replace(/[&<>"']/g,c=>( {
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}
+[c]));
+const canValidate=()=>['Administración','Producción'].includes(role);
+const notify=t=> {
+  document.getElementById('notice').textContent=t
+}
+;
+function save() {
+  try {
+    localStorage.setItem(key,JSON.stringify(state));
+    return true
+  }
+  catch(e) {
+    notify('No se pudo guardar en este navegador. Exporta los datos antes de cerrar.');
+    return false
+  }
+}
+function log(t) {
+  state.logs.unshift( {
+    date:new Date().toLocaleString('es-MX'),role,text:t
+  }
+  )
+}
+function nav(v) {
+  view=v;
+  notify('');
+  render()
+}
+function enter() {
+  role=document.getElementById('role').value;
+  render()
+}
+function table(headers,rows) {
+  return '<div class="tablewrap"><table><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'
+}
+const intro=(title,desc)=>'<h2>'+title+'</h2><p class="muted">'+desc+'</p>';
+function render() {
+  if(!role) {
+    document.getElementById('app').innerHTML='<div class="login card"><span class="tag">Prototipo académico · Act.16</span><h1>SIGAVAS</h1><p>Gestión agrícola Valle del Sol</p><h3>Explorar la demostración</h3><p class="muted">Practica el flujo de una actividad, su consumo de insumos y el costo por hectárea.</p><label>Perfil de demostración<select id="role"><option>Producción</option><option>Administración</option><option>Encargado de campo</option><option>Compras</option><option>Personal administrativo</option></select></label><button onclick="enter()">Entrar a la demostración</button><div class="info">Datos ficticios. La selección de perfil simula permisos; no es un inicio de sesión seguro.</div><small>Los cambios se conservan únicamente en este navegador. No hay conexión con una empresa ni servidor de producción.</small></div>';
+    return
+  }
+  document.getElementById('app').innerHTML='<aside><h1>SIGAVAS</h1><p>Valle del Sol · Gestión agrícola</p>'+['Inicio','Campos y ciclos','Actividades','Inventario','Cosecha y envíos','Reportes','Ayuda'].map(x=>'<button class="'+(view===x?'active':'')+'" onclick="nav(\''+x+'\')">'+x+'</button>').join('')+'<small>Act.16<br>Demostración con datos ficticios<br>Almacenamiento local</small></aside><main><header><div><small>OTOÑO–INVIERNO 2026 · ESCENARIO ACADÉMICO</small><strong>'+safe(role)+'</strong></div><button class="secondary" onclick="role=\'\';notify(\'\');render()">Salir</button></header><section id="content"></section><footer>SIGAVAS · Prototipo de interfaces · Los 290 PF corresponden al alcance objetivo, no a esta demostración.</footer></main>';
+  document.getElementById('content').innerHTML=pages[view]();
+}
+const pages= {
+  'Inicio':()=>intro('La operación, en un solo lugar','Escenario de práctica: Campo Norte · Lote N-01 · 10 hectáreas de sandía.')+'<div class="grid"><div class="card"><span class="muted">Costo acumulado del lote</span><div class="stat">'+money(state.cost)+'</div><span class="tag">Temporada actual</span></div><div class="card"><span class="muted">Costo por hectárea</span><div class="stat">'+money(state.cost/10)+'</div><small>'+money(state.cost)+' ÷ 10 ha</small></div><div class="card"><span class="muted">Existencia del insumo</span><div class="stat">'+state.stock+' <small>unidades</small></div><span class="tag '+(state.stock<5?'warn':'')+'">'+(state.stock<5?'Revisar abastecimiento':'Disponible')+'</span></div></div><div class="card"><h3>Continúa el flujo de trabajo</h3><p>Registra una actividad pendiente y valídala para relacionar el consumo con su costo.</p><button onclick="nav(\'Actividades\')">Registrar una actividad</button></div><div class="card"><h3>Estado de la captura</h3>'+table(['Pendientes','Validadas','Superficie del lote'],[[state.activities.filter(a=>!a.valid).length,state.activities.filter(a=>a.valid).length,'10 ha']])+'</div>', 'Campos y ciclos':()=>intro('Campos y ciclos','Catálogo de consulta del caso académico; los datos maestros no se modifican en esta versión.')+'<div class="card">'+table(['Campo','Superficie total','Estado'],[['Norte','40 ha','Ciclo de práctica'],['Centro','50 ha','Catálogo de referencia'],['Oriente','45 ha','Catálogo de referencia'],['Poniente','45 ha','Catálogo de referencia']])+'</div><div class="card"><h3>Asignación de práctica</h3>'+table(['Lote','Cultivo','Temporada','Superficie sembrada'],[['N-01 · Campo Norte','Sandía','Otoño–invierno 2026','10 ha']])+'<p class="muted">Las 10 ha del lote son parte de las 40 ha del Campo Norte. Los costos mostrados corresponden únicamente a esta asignación.</p></div>', 'Actividades':()=>intro('Actividades agrícolas','Captura y validación del consumo de un insumo de práctica a $100 por unidad.')+'<div class="card"><h3>Nueva actividad</h3><form onsubmit="addActivity(event)"><div class="row"><label>Actividad<select id="activity"><option>Aplicación de fertilizante</option><option>Preparación del terreno</option><option>Siembra</option></select></label><label>Fecha<input id="date" type="date" value="2026-10-03" required></label><label>Cantidad de insumo<input id="quantity" type="number" min="1" step="1" value="5" required></label></div><p class="muted">Campo Norte / N-01 / Sandía / Otoño–invierno 2026. El ejercicio admite unidades enteras.</p><button '+(!['Administración','Producción','Encargado de campo'].includes(role)?'disabled':'')+'>Guardar pendiente</button></form></div><div class="card"><h3>Registros de la temporada</h3>'+table(['Folio y actividad','Cantidad','Estado','Acción'],state.activities.map((a,i)=>[safe(a.id)+'<br>'+safe(a.name),a.q+' u','<span class="tag">'+(a.valid?'Validada':'Pendiente')+'</span>',a.valid?'Consumo contabilizado':'<button '+(!canValidate()?'disabled':'')+' onclick="validate('+i+')">Validar</button>']))+(state.activities.length?'':'<p class="muted">Todavía no hay actividades. Guarda la primera captura.</p>')+'</div><p class="muted">Una actividad validada queda bloqueada. La corrección autorizada y las excepciones de inventario requieren desarrollo posterior.</p>', 'Inventario':()=>intro('Inventario de insumos','La validación de actividades descuenta existencias y actualiza costos.')+'<div class="card">'+table(['Insumo de práctica','Lote de producto','Existencia','Costo unitario'],[['Fertilizante de demostración','INS-001',state.stock+' unidades','$100.00']])+'</div><div class="card"><h3>Registrar una entrada</h3><form onsubmit="addStock(event)"><div class="row"><label>Cantidad recibida<input id="incoming" type="number" min="1" step="1" value="10" required></label><label>Referencia de recepción<input id="reference" required maxlength="50" value="COMPRA-DEMO-01"></label></div><button '+(!['Administración','Compras'].includes(role)?'disabled':'')+'>Guardar entrada</button></form><p class="muted">Disponible para Administración y Compras. La entrada incrementa inventario; el costo del lote agrícola se reconoce al consumirlo.</p></div>', 'Cosecha y envíos':()=>intro('Cosecha, empaque y transporte','Flujo simplificado de cantidades para el lote N-01. Todos los registros utilizan kilogramos.')+'<div class="grid"><div class="card"><h3>Cosechado</h3><div class="stat">'+state.harvest+' kg</div></div><div class="card"><h3>Empacado</h3><div class="stat">'+state.packed+' kg</div></div><div class="card"><h3>Enviado</h3><div class="stat">'+state.sent+' kg</div></div></div><div class="card"><form onsubmit="produce(event)"><div class="row"><label>Operación<select id="operation"><option>Cosechar</option><option>Empacar</option><option>Enviar</option></select></label><label>Cantidad en kg<input id="kg" type="number" min="0.01" step="0.01" value="100" required></label></div><button>Registrar cantidad</button></form><p class="muted">Cosecha: Administración, Producción o Encargado. Empaque y envío: Administración o Personal administrativo. Se impide empacar más de lo cosechado y enviar más de lo empacado.</p></div><div class="info">Vista simplificada. No captura cuadrillas, merma, destinos, comprobantes ni costos logísticos; esos requisitos siguen pendientes.</div>', 'Reportes':()=>intro('Reportes y trazabilidad','Resumen de la asignación N-01 y registro local de movimientos.')+'<div class="card">'+table(['Indicador','Resultado'],[['Costo acumulado',money(state.cost)],['Hectáreas sembradas','10 ha'],['Costo por hectárea',money(state.cost/10)],['Existencia de insumo',state.stock+' unidades'],['Cosecha / empaque / envío',state.harvest+' / '+state.packed+' / '+state.sent+' kg']])+'<div class="row" style="margin-top:20px"><button onclick="exportCSV()">Exportar CSV</button><button class="secondary" onclick="window.print()">Imprimir / guardar PDF</button><button class="secondary" onclick="exportJSON()">Exportar datos JSON</button></div></div><div class="card"><h3>Bitácora de demostración</h3>'+table(['Fecha','Perfil','Movimiento'],state.logs.map(x=>[safe(x.date),safe(x.role),safe(x.text)]))+(state.logs.length?'':'<p class="muted">Aún no hay movimientos.</p>')+'</div>', 'Ayuda':()=>intro('Guía rápida','Una práctica completa, desde la captura hasta el reporte.')+'<div class="card"><ol class="steps"><li>Entra con el perfil Producción.</li><li>Abre Actividades, conserva la cantidad 5 y pulsa Guardar pendiente.</li><li>Pulsa Validar. La existencia baja de 20 a 15 unidades y el costo sube de $10,000 a $10,500.</li><li>Consulta Reportes: el costo por hectárea debe ser $1,050.</li><li>Exporta CSV para una hoja de cálculo o usa Imprimir / guardar PDF.</li></ol><p>Si ya hay movimientos, estos valores iniciales cambian. Para repetir la práctica desde cero, restablece los datos.</p><button class="secondary" onclick="resetData()">Restablecer datos de práctica</button></div><div class="card"><h3>Alcance y conservación de datos</h3><p>La demostración se ejecuta localmente y guarda los cambios en este navegador si permite almacenamiento local. Salir no borra los datos. Al borrar los datos del navegador se pierde la información local; exporta JSON para conservar una copia de consulta. No hay función de restauración en esta versión.</p><p>Los perfiles son una simulación de la interfaz. No hay autenticación real, servidor, base de datos compartida, respaldos automáticos ni operación multiusuario. La validación concurrente y las autorizaciones excepcionales pertenecen al diseño objetivo.</p></div>'
+}
+;
+function addActivity(e) {
+  e.preventDefault();
+  if(!['Administración','Producción','Encargado de campo'].includes(role))return notify('Este perfil no puede capturar actividades.');
+  let q=Number(document.getElementById('quantity').value);
+  if(!Number.isSafeInteger(q)||q<=0)return notify('Captura un entero positivo.');
+  let a= {
+    id:'ACT-'+String(state.activities.length+1).padStart(3,'0'),q,name:document.getElementById('activity').value,date:document.getElementById('date').value,valid:false
+  }
+  ;
+  state.activities.push(a);
+  log('Captura pendiente '+a.id);
+  save();
+  render();
+  notify('Actividad guardada como pendiente. Aún no afecta inventario ni costos.')
+}
+function validate(i) {
+  if(!canValidate())return notify('Este perfil no puede validar.');
+  let a=state.activities[i];
+  if(a.valid)return notify('La actividad ya está validada; no se repite el consumo.');
+  if(a.q>state.stock)return notify('Existencia insuficiente. No hubo cambios. Registra una entrada con Compras o Administración.');
+  state.stock-=a.q;
+  state.cost+=a.q*100;
+  a.valid=true;
+  log('Validación '+a.id+': salida '+a.q+' u; costo '+money(a.q*100));
+  save();
+  render();
+  notify('Validada. Inventario y costo actualizados una sola vez.')
+}
+function addStock(e) {
+  e.preventDefault();
+  if(!['Administración','Compras'].includes(role))return notify('Este perfil no puede registrar entradas.');
+  let n=Number(document.getElementById('incoming').value);
+  if(!Number.isSafeInteger(n)||n<=0)return notify('Captura un entero positivo.');
+  state.stock+=n;
+  log('Entrada '+n+' u · '+document.getElementById('reference').value);
+  save();
+  render();
+  notify('Entrada registrada.')
+}
+function produce(e) {
+  e.preventDefault();
+  let op=document.getElementById('operation').value,n=Math.round(Number(document.getElementById('kg').value)*100)/100;
+  if(!Number.isFinite(n)||n<=0)return notify('Captura una cantidad positiva.');
+  let allowed=op==='Cosechar'?['Administración','Producción','Encargado de campo']:['Administración','Personal administrativo'];
+  if(!allowed.includes(role))return notify('Este perfil no tiene permiso para '+op.toLowerCase()+'.');
+  if(op==='Empacar'&&n>state.harvest-state.packed+1e-8)return notify('No puedes empacar más de lo cosechado disponible.');
+  if(op==='Enviar'&&n>state.packed-state.sent+1e-8)return notify('No puedes enviar más de lo empacado disponible.');
+  let k=op==='Cosechar'?'harvest':op==='Empacar'?'packed':'sent';
+  state[k]=Math.round((state[k]+n)*100)/100;
+  log(op+' '+n+' kg · N-01');
+  save();
+  render();
+  notify('Cantidad registrada.')
+}
+function download(name,data,type) {
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data], {
+    type
+  }
+  ));
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+function exportCSV() {
+  download('SIGAVAS-reporte.csv','\ufeffIndicador,Valor\r\nCosto acumulado,'+state.cost+'\r\nHectareas,10\r\nCosto por hectarea,'+(state.cost/10).toFixed(2)+'\r\nExistencia,'+state.stock+'\r\nCosechado kg,'+state.harvest+'\r\nEmpacado kg,'+state.packed+'\r\nEnviado kg,'+state.sent,'text/csv;charset=utf-8')
+}
+function exportJSON() {
+  download('SIGAVAS-datos.json',JSON.stringify(state,null,2),'application/json')
+}
+function resetData() {
+  if(confirm('¿Borrar todos los movimientos de esta práctica y volver a los datos iniciales?')) {
+    state=base();
+    save();
+    render();
+    notify('Datos restablecidos: 20 unidades y $10,000 de costo.')
+  }
+}
+render();
+  </script>
+</body>
+</html>
